@@ -9,11 +9,11 @@ def main(settings):
     client_cert = settings.get('CLIENT_CERT')
     debug = settings.get('DEBUG')
 
-    (status, json_resp) = health_check(grafana_url, http_get_headers, verify_ssl, client_cert, debug)
+    (status, json_resp, api_url) = health_check(grafana_url, http_get_headers, verify_ssl, client_cert, debug)
     if not status == 200:
         return (status, json_resp, None, None)
 
-    (status, json_resp) = auth_check(grafana_url, http_get_headers, verify_ssl, client_cert, debug)
+    (status, json_resp, api_url) = auth_check(grafana_url, http_get_headers, verify_ssl, client_cert, debug)
     if not status == 200:
         return (status, json_resp, None, None)
 

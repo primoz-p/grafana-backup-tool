@@ -1,4 +1,7 @@
-import re, sys, json
+import os
+import re
+import sys
+import json
 
 
 def print_horizontal_line():
@@ -40,7 +43,9 @@ def save_json(file_name, data, folder_path, extension, pretty_print):
     if re.match(pattern, file_name):
         file_name = re.sub(pattern, '', file_name)
 
-    file_path = folder_path + '/' + file_name + '.' + extension
+    # file_path = folder_path + '/' + file_name + '.' + extension
+    file_path = folder_path + '/' + file_name + '.json'
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(u"{0}".format(file_path), 'w') as f:
         if pretty_print:
             f.write(json.dumps(data, sort_keys=True, indent=4, separators=(',', ': ')))
