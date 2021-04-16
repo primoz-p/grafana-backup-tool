@@ -1,4 +1,10 @@
 from grafana_backup.api_checks import main as api_checks
+from grafana_backup.dataDefinition.AlertChannelsDataDefinition import AlertChannelsDataDefinition
+from grafana_backup.dataDefinition.DashboardsDataDefinition import DashboardDataDefinition
+from grafana_backup.dataDefinition.DataSourcesDataDefinition import DataSourcesDataDefinition
+from grafana_backup.dataDefinition.FoldersDataDefinition import FoldersDataDefinition
+from grafana_backup.dataDefinition.OrganizationsDataDefinition import OrganizationsDataDefinition
+from grafana_backup.dataDefinition.UsersDataDefinition import UsersDataDefinition
 from grafana_backup.save_dashboards import main as save_dashboards
 from grafana_backup.save_datasources import main as save_datasources
 from grafana_backup.save_folders import main as save_folders
@@ -16,12 +22,12 @@ def main(args, settings):
     arg_components = args.get('--components', False)
     arg_no_archive = args.get('--no-archive', False)
 
-    backup_functions = {'dashboards': save_dashboards,
-                        'datasources': save_datasources,
-                        'folders': save_folders,
-                        'alert-channels': save_alert_channels,
-                        'organizations': save_orgs,
-                        'users': save_users}
+    backup_functions = {'dashboards': DashboardDataDefinition(settings),
+                        'datasources': DataSourcesDataDefinition(settings),
+                        'folders': FoldersDataDefinition(settings),
+                        'alert-channels': AlertChannelsDataDefinition(settings),
+                        'organizations': OrganizationsDataDefinition(settings),
+                        'users': UsersDataDefinition(settings)}
 
     (status, json_resp, uid_support, paging_support) = api_checks(settings)
 
@@ -38,11 +44,11 @@ def main(args, settings):
 
         # Backup only the components that provided via an argument
         for backup_function in arg_components_list:
-            backup_functions[backup_function](args, settings)
+            backup_functions[backup_function].save()
     else:
         # Backup every component
         for backup_function in backup_functions.keys():
-            backup_functions[backup_function](args, settings)
+            backup_functions[backup_function].save()
 
     aws_s3_bucket_name = settings.get('AWS_S3_BUCKET_NAME')
     azure_storage_container_name = settings.get('AZURE_STORAGE_CONTAINER_NAME')

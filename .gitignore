@@ -1,3 +1,4 @@
+.idea
 *.pyc
 __pycache__
 Pipfile.lock
@@ -6,3 +7,4 @@ venv/
 build/
 dist/
 *.egg-info/
+grafanaSettings.json
