@@ -14,8 +14,8 @@ def main(args, settings):
     debug = settings.get('DEBUG')
     pretty_print = settings.get('PRETTY_PRINT')
 
-    folder_path = '{0}/{1}/alert_channels'.format(backup_dir, timestamp)
-    log_file = 'all_alert_channels.txt'
+    folder_path = '{0}/alert_channels/{1}'.format(backup_dir, timestamp)
+    log_file = 'alert_channels_{0}.txt'.format(timestamp)
 
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
@@ -28,27 +28,37 @@ def main(args, settings):
 def get_all_alert_channels_in_grafana(grafana_url, http_get_headers, verify_ssl, client_cert, debug):
     (status, content) = search_alert_channels(grafana_url, http_get_headers, verify_ssl, client_cert, debug)
     if status == 200:
-        print("    Aler channels found: {0}".format(len(content)))
-        return content
+        channels = content
+        print("There are {0} channels:".format(len(channels)))
+        for channel in channels:
+            print("name: {0}".format(to_python2_and_3_compatible_string(channel['name'])))
+        return channels
     else:
-        print("    Error searching alert channels:" \
-              "\n        status: {0}" \
-              "\n        message: {1}".format(status, content))
+        print("query alert channels failed, status: {0}, msg: {1}".format(status, content))
         return []
 
 
+def save_alert_channel(channel_name, file_name, alert_channel_setting, folder_path, pretty_print):
+    file_path = save_json(file_name, alert_channel_setting, folder_path, 'alert_channel', pretty_print)
+    print("alert_channel:{0} is saved to {1}".format(channel_name, file_path))
+
+
 def get_individual_alert_channel_and_save(channels, folder_path, log_file, pretty_print):
+    file_path = folder_path + '/' + log_file
     if channels:
-        with open(u"{0}".format(folder_path + '/' + log_file), 'w') as f:
-            for alert_channel in channels:
-                file_name = alert_channel['name'] + "_" + alert_channel['id']
-
-                file_path = save_json(file_name, alert_channel, folder_path, 'alert_channel', pretty_print)
-
-                log = 'Channel ID: {0}' \
-                      '\n    id: {1}' \
-                      '\n    title: {2}' \
-                      '\n    saved to: {3}\n' \
-                    .format(alert_channel['id'], alert_channel['id'], alert_channel['title'], file_path)
-                print(log)
-                f.write(log)
+        with open(u"{0}".format(file_path), 'w') as f:
+            for channel in channels:
+                if 'uid' in channel:
+                    channel_identifier = channel['uid']
+                else:
+                    channel_identifier = channel['id']
+                    
+                save_alert_channel(
+                    to_python2_and_3_compatible_string(channel['name']),
+                    to_python2_and_3_compatible_string(str(channel_identifier)),
+                    channel,
+                    folder_path,
+                    pretty_print
+                )
+                f.write('{0}\t{1}\n'.format(to_python2_and_3_compatible_string(str(channel_identifier)),
+                                            to_python2_and_3_compatible_string(channel['name'])))

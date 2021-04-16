@@ -1,17 +1,18 @@
 {
   "general": {
-    "debug": false,
+    "debug": true,
     "verify_ssl": true,
-    "backup_dir": "/Users/primoz.prislan/backup/grafana/grafana-backup-tool/",
-    "backup_file_format": "%Y%m%d_%H%M%S",
-    "pretty_print": true
+    "backup_dir": "_OUTPUT_",
+    "backup_file_format": "%Y%m%d%H%M",
+    "pretty_print": false
   },
   "grafana": {
-    "url": "https://grafana.neutrino8.com",
-    "token": "eyJrIjoiUlBLUkRadWowZ3RMdkdJYTMzUG9PbmhCTmdWQjJ1V3AiLCJuIjoiZ3JhZmFuYS1iYWNrdXAtdG9vbFx0IiwiaWQiOjF9",
+    "url": "http://localhost:3000",
+    "token": "",
     "search_api_limit": 5000,
     "default_password": "00000000",
-    "admin_account": "admin",
-    "admin_password": "QyU8zemr3LlGACTgV1Qv"
+    "admin_account": "",
+    "admin_password": ""
   }
 }
+

@@ -14,47 +14,29 @@ def main(args, settings):
     debug = settings.get('DEBUG')
     pretty_print = settings.get('PRETTY_PRINT')
 
-    folder_path = '{0}/{1}/datasources'.format(backup_dir, timestamp)
-    log_file = 'all_datasources.txt'
+    folder_path = '{0}/datasources/{1}'.format(backup_dir, timestamp)
+    log_file = 'datasources_{0}.txt'.format(timestamp)
 
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
-    datasources = get_all_datasources_and_save(folder_path, log_file, grafana_url, http_get_headers, verify_ssl, client_cert, debug, pretty_print)
+    datasources = get_all_datasources_and_save(folder_path, grafana_url, http_get_headers, verify_ssl, client_cert, debug, pretty_print)
     print_horizontal_line()
 
 
-def get_datasources(grafana_url, http_get_headers, verify_ssl, client_cert, debug):
-    (status, content) = search_datasource(grafana_url, http_get_headers, verify_ssl, client_cert, debug)
-
-    if status == 200:
-        print("    Datasources found: {0}".format(len(content)))
-        return content
-    else:
-        print("    Error searching datasources:" \
-              "\n        status: {0}" \
-              "\n        message: {1}".format(status, content))
-        return []
+def save_datasource(file_name, datasource_setting, folder_path, pretty_print):
+    file_path = save_json(file_name, datasource_setting, folder_path, 'datasource', pretty_print)
+    print("datasource:{0} is saved to {1}".format(file_name, file_path))
 
 
-def get_all_datasources_and_save(folder_path, log_file, grafana_url, http_get_headers, verify_ssl, client_cert, debug, pretty_print):
-    status_code_and_content = get_datasources(grafana_url, http_get_headers, verify_ssl, client_cert, debug)
+def get_all_datasources_and_save(folder_path, grafana_url, http_get_headers, verify_ssl, client_cert, debug, pretty_print):
+    status_code_and_content = search_datasource(grafana_url, http_get_headers, verify_ssl, client_cert, debug)
     if status_code_and_content[0] == 200:
         datasources = status_code_and_content[1]
         print("There are {0} datasources:".format(len(datasources)))
-        with open(u"{0}".format(folder_path + '/' + log_file), 'w') as f:
-            for datasource in datasources:
-                file_name = datasource['name'] + "_" + datasource['id']
-
-                file_path = save_json(file_name, datasource, folder_path, 'datasource', pretty_print)
-
-                log = 'Datasource ID: {0}' \
-                      '\n    id: {1}' \
-                      '\n    title: {2}' \
-                      '\n    saved to: {3}\n' \
-                    .format(datasource['id'], datasource['id'], datasource['title'], file_path)
-                print(log)
-                f.write(log)
+        for datasource in datasources:
+            print(datasource)
+            save_datasource(datasource['name'], datasource, folder_path, pretty_print)
     else:
         print("query datasource failed, status: {0}, msg: {1}".format(status_code_and_content[0],
                                                                       status_code_and_content[1]))
